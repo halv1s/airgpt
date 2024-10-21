@@ -15,7 +15,7 @@ function App() {
     return (
         <div className="flex-grow flex flex-col">
             <div className="flex-grow">
-                <Message role="bot" message={markdownMessage} />
+                <Message isBot={true} message={markdownMessage} />
             </div>
 
             <div className="p-4 flex gap-4">

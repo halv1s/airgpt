@@ -2,15 +2,27 @@ import { FC } from "react";
 import Markdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { atomDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { RocketIcon, PersonIcon } from "@radix-ui/react-icons";
 
 interface Props {
-    role: "human" | "bot";
     message: string;
+    isBot: boolean;
 }
 
-const Message: FC<Props> = ({ message }) => {
+const Message: FC<Props> = ({ message, isBot }) => {
     return (
-        <div className="p-4 bg-gray-100 rounded-lg shadow-md">
+        <div className="p-4 rounded-lg shadow-md">
+            <div className="flex items-center gap-2 mb-4">
+                <div className="p-3 rounded-full bg-slate-100">
+                    {isBot ? (
+                        <RocketIcon className="w-5 h-5" />
+                    ) : (
+                        <PersonIcon className="w-5 h-5" />
+                    )}
+                </div>
+                <p className="text-lg font-semibold">{isBot ? "Bot" : "You"}</p>
+            </div>
+
             <Markdown
                 children={message}
                 components={{
