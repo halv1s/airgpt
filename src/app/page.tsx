@@ -24,11 +24,16 @@ function App() {
     const handleSendInput = async () => {
         if (!isMounted) return;
 
+        const userContent = input.trim();
+        if (userContent === "") {
+            return;
+        }
+
         setIsSending(true);
 
         const userMessage: IMessage = {
             id: uuidv4(),
-            content: input,
+            content: userContent,
             isBot: false,
         };
         const botMessage: IMessage = {
@@ -41,7 +46,7 @@ function App() {
         botMessageRef.current = botMessage;
 
         await chat({
-            content: input,
+            content: userContent,
             onReceiveChunk: (chunk) => {
                 if (botMessageRef.current) {
                     botMessageRef.current.content += chunk;
@@ -74,6 +79,12 @@ function App() {
                 <Textarea
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSendInput();
+                        }
+                    }}
                     disabled={isSending}
                 />
                 <Button
