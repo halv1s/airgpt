@@ -32,7 +32,7 @@ export default function RootLayout({
             >
                 <SidebarProvider>
                     <AppSidebar />
-                    <main className="h-screen w-full flex flex-col">
+                    <main className="h-screen flex-grow flex flex-col">
                         <nav className="flex items-center gap-2 p-2">
                             <SidebarTrigger className="[&_svg]:size-6" />
                             <h1 className="text-lg font-bold">Air GPT</h1>
