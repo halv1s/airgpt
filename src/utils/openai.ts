@@ -1,11 +1,12 @@
-import React from "react";
 import OpenAI from "openai";
 
-const openai = new OpenAI();
+const openai = new OpenAI({
+    apiKey: "",
+});
 
 interface ChatProps {
     content: string;
-    setAnswer: React.Dispatch<React.SetStateAction<string>>;
+    onReceiveChunk: (chunk: string) => void;
 }
 
 export const chat = async (props: ChatProps) => {
@@ -15,8 +16,6 @@ export const chat = async (props: ChatProps) => {
         stream: true,
     });
     for await (const chunk of stream) {
-        props.setAnswer(
-            (prev) => prev + (chunk.choices[0]?.delta?.content || "")
-        );
+        props.onReceiveChunk(chunk.choices[0]?.delta?.content || "");
     }
 };

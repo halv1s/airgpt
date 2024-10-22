@@ -2,24 +2,37 @@ import { Textarea } from "./components/ui/textarea";
 import { Button } from "./components/ui/button";
 import Message from "./components/message";
 import { useState } from "react";
-
-const markdownMessage = `
-  # Hello, World!
-  This is a message with **bold text**, _italic text_, and a code block:
-  
-  \`\`\`js
-  console.log('Hello, world!');
-  \`\`\`
-`;
+import { PaperPlaneIcon } from "@radix-ui/react-icons";
+import { IMessage } from "./utils/types";
+import { chat } from "./utils/openai";
 
 function App() {
     const [isSending, setIsSending] = useState(false);
     const [input, setInput] = useState("");
+    const [history, setHistory] = useState<IMessage[]>([]);
 
     const handleSendInput = async () => {
         setIsSending(true);
-        console.log("--> send:", input);
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const newMessage: IMessage = {
+            id: Date.now().toString(),
+            content: "",
+            isBot: true,
+        };
+        setHistory((prevHistory) => [...prevHistory, newMessage]);
+
+        await chat({
+            content: input,
+            onReceiveChunk: (chunk) => {
+                setHistory((prevHistory) => {
+                    const updatedHistory = [...prevHistory];
+                    const lastMessage =
+                        updatedHistory[updatedHistory.length - 1];
+                    lastMessage.content += chunk;
+                    return updatedHistory;
+                });
+            },
+        });
+
         setInput("");
         setIsSending(false);
     };
@@ -27,7 +40,9 @@ function App() {
     return (
         <div className="flex-grow flex flex-col">
             <div className="flex-grow">
-                <Message isBot={true} message={markdownMessage} />
+                {history.map((message) => (
+                    <Message key={message.id} message={message} />
+                ))}
             </div>
 
             <div className="p-4 flex gap-4">
@@ -36,8 +51,12 @@ function App() {
                     onChange={(e) => setInput(e.target.value)}
                     disabled={isSending}
                 />
-                <Button onClick={handleSendInput} disabled={isSending}>
-                    Send
+                <Button
+                    size="icon"
+                    onClick={handleSendInput}
+                    disabled={isSending}
+                >
+                    <PaperPlaneIcon />
                 </Button>
             </div>
         </div>
