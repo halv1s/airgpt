@@ -1,4 +1,4 @@
-import { IMessage } from "@/utils/types";
+import { IMessage, MessageSender } from "@/utils/types";
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 
@@ -21,26 +21,27 @@ export async function POST(req: NextRequest) {
     }
 
     const openaiMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] =
-        chatHistory.map((msg) => {
-            if (msg.isBot) {
-                return {
-                    role: "assistant",
-                    content: msg.content,
-                } as OpenAI.Chat.Completions.ChatCompletionAssistantMessageParam;
-            } else {
-                return {
-                    role: "user",
-                    content: msg.content,
-                } as OpenAI.Chat.Completions.ChatCompletionUserMessageParam;
-            }
-        });
+        [];
+    chatHistory.forEach((msg) => {
+        if (msg.sender === MessageSender.Assistant) {
+            openaiMessages.push({
+                role: "assistant",
+                content: msg.content,
+            } as OpenAI.Chat.Completions.ChatCompletionAssistantMessageParam);
+        } else if (msg.sender === MessageSender.User) {
+            openaiMessages.push({
+                role: "user",
+                content: msg.content,
+            } as OpenAI.Chat.Completions.ChatCompletionUserMessageParam);
+        }
+    });
 
     try {
         const stream = await openai.chat.completions.create({
             model: "gpt-4o-mini",
             messages: [
                 {
-                    role: "system",
+                    role: MessageSender.System,
                     content: `Respond Guidelines:
                         1. Understand the Task: Grasp objectives, goals, requirements, constraints, and expected output.
                         2. Minimal Changes: Improve prompts only if simple; enhance clarity for complex prompts without changing structure.

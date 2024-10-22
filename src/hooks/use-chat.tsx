@@ -1,5 +1,5 @@
 import { chat } from "@/utils/chat";
-import { IMessage } from "@/utils/types";
+import { IMessage, MessageSender } from "@/utils/types";
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
@@ -31,12 +31,15 @@ export const useChat = ({ lastMessageRef }: Props) => {
         const userMessage: IMessage = {
             id: uuidv4(),
             content: userContent,
-            isBot: false,
+            sender: MessageSender.User,
+            timestamp: new Date(),
         };
+
         const botMessage: IMessage = {
             id: uuidv4(),
             content: "",
-            isBot: true,
+            sender: MessageSender.Assistant,
+            timestamp: new Date(),
         };
 
         const chatHistory = [...history, userMessage];

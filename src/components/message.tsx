@@ -1,4 +1,4 @@
-import { IMessage } from "@/utils/types";
+import { IMessage, MessageSender } from "@/utils/types";
 import { PersonIcon, RocketIcon } from "@radix-ui/react-icons";
 import { FC } from "react";
 import Markdown from "react-markdown";
@@ -14,7 +14,7 @@ const Message: FC<Props> = ({ message }) => {
         <div className="p-4 shadow-md">
             <div className="flex items-center gap-2 mb-4">
                 <div className="p-3 rounded-full bg-slate-100">
-                    {message.isBot ? (
+                    {message.sender === MessageSender.Assistant ? (
                         <RocketIcon className="w-5 h-5" />
                     ) : (
                         <PersonIcon className="w-5 h-5" />
@@ -22,10 +22,12 @@ const Message: FC<Props> = ({ message }) => {
                 </div>
                 <p
                     className={`text-lg font-semibold ${
-                        !message.isBot ? "text-sky-700" : ""
+                        message.sender === MessageSender.User
+                            ? "text-sky-700"
+                            : ""
                     }`}
                 >
-                    {message.isBot ? "Bot" : "You"}
+                    {message.sender === MessageSender.Assistant ? "Bot" : "You"}
                 </p>
             </div>
 
