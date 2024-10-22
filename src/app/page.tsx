@@ -1,81 +1,36 @@
 "use client";
 
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 import Message from "@/components/message";
-import { useEffect, useState, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Textarea } from "@/components/ui/textarea";
+import { useChat } from "@/hooks/use-chat";
 import { PaperPlaneIcon } from "@radix-ui/react-icons";
-import { IMessage } from "@/utils/types";
-import { chat } from "@/utils/chat";
-import { v4 as uuidv4 } from "uuid";
+import { useRef } from "react";
 
 function App() {
-    const [isSending, setIsSending] = useState(false);
-    const [input, setInput] = useState("");
-    const [history, setHistory] = useState<IMessage[]>([]);
-    const [isMounted, setIsMounted] = useState(false);
-
-    const botMessageRef = useRef<IMessage | null>(null);
-
-    useEffect(() => {
-        setIsMounted(true);
-    }, []);
-
-    const handleSendInput = async () => {
-        if (!isMounted) return;
-
-        const userContent = input.trim();
-        if (userContent === "") {
-            return;
-        }
-
-        setIsSending(true);
-
-        const userMessage: IMessage = {
-            id: uuidv4(),
-            content: userContent,
-            isBot: false,
-        };
-        const botMessage: IMessage = {
-            id: uuidv4(),
-            content: "",
-            isBot: true,
-        };
-
-        setHistory((prevHistory) => [...prevHistory, userMessage, botMessage]);
-        botMessageRef.current = botMessage;
-
-        await chat({
-            content: userContent,
-            onReceiveChunk: (chunk) => {
-                if (botMessageRef.current) {
-                    botMessageRef.current.content += chunk;
-
-                    setHistory((prevHistory) => {
-                        if (!botMessageRef.current) return prevHistory;
-                        const updatedHistory = [...prevHistory];
-                        updatedHistory[updatedHistory.length - 1] = {
-                            ...botMessageRef.current,
-                        };
-                        return updatedHistory;
-                    });
-                }
-            },
-        });
-
-        setInput("");
-        setIsSending(false);
-    };
+    const scrollAreaRef = useRef<HTMLDivElement | null>(null);
+    const lastMessageRef = useRef<HTMLDivElement | null>(null);
+    const { input, isSending, history, setInput, handleSendInput } = useChat({
+        lastMessageRef,
+    });
 
     return (
         <div className="flex-grow flex flex-col">
-            <div className="flex-grow">
-                {history.map((message) => (
-                    <Message key={message.id} message={message} />
+            <ScrollArea ref={scrollAreaRef} className="flex-grow h-0">
+                {history.map((message, index) => (
+                    <div
+                        ref={
+                            index === history.length - 1 ? lastMessageRef : null
+                        }
+                        key={message.id}
+                    >
+                        <Message message={message} />
+                    </div>
                 ))}
-            </div>
+            </ScrollArea>
 
-            <div className="p-4 flex gap-4">
+            <div className="p-4 flex gap-4 border-t border-slate-200">
                 <Textarea
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
@@ -86,6 +41,7 @@ function App() {
                         }
                     }}
                     disabled={isSending}
+                    placeholder="Ask something..."
                 />
                 <Button
                     size="icon"

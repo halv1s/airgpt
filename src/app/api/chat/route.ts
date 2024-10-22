@@ -1,3 +1,4 @@
+import { IMessage } from "@/utils/types";
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 
@@ -6,14 +7,33 @@ const openai = new OpenAI({
 });
 
 export async function POST(req: NextRequest) {
-    const { content } = await req.json();
+    const {
+        chatHistory,
+    }: {
+        chatHistory: IMessage[] | undefined;
+    } = await req.json();
 
-    if (!content) {
+    if (!chatHistory) {
         return NextResponse.json(
-            { error: "Content is required" },
+            { error: "Chat history is required" },
             { status: 400 }
         );
     }
+
+    const openaiMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] =
+        chatHistory.map((msg) => {
+            if (msg.isBot) {
+                return {
+                    role: "assistant",
+                    content: msg.content,
+                } as OpenAI.Chat.Completions.ChatCompletionAssistantMessageParam;
+            } else {
+                return {
+                    role: "user",
+                    content: msg.content,
+                } as OpenAI.Chat.Completions.ChatCompletionUserMessageParam;
+            }
+        });
 
     try {
         const stream = await openai.chat.completions.create({
@@ -21,9 +41,20 @@ export async function POST(req: NextRequest) {
             messages: [
                 {
                     role: "system",
-                    content: "Be concise and direct. Between lines, add \\n.",
+                    content: `Respond Guidelines:
+                        1. Understand the Task: Grasp objectives, goals, requirements, constraints, and expected output.
+                        2. Minimal Changes: Improve prompts only if simple; enhance clarity for complex prompts without changing structure.
+                        3. Reasoning Before Conclusions: Encourage reasoning first; reverse order if examples show reasoning after.
+                        4. Reasoning Order: Identify and adjust reasoning and conclusion order as needed.
+                        5. Conclusion Last: Always place conclusions last.
+                        6. Examples: Include high-quality examples with placeholders [in brackets].
+                        7. Clarity and Conciseness: Use clear, direct language; avoid unnecessary details.
+                        8. Formatting: Use markdown for readability; avoid using unless requested.
+                        9. Preserve User Content: Keep detailed user-provided guidelines and examples; break down vague content.
+                        10. Constants: Include constants like rubrics and examples as they are safe from prompt injection.
+                        11. Output Format: Specify output format in detail, favoring JSON for structured data; do not wrap JSON in unless requested.`,
                 },
-                { role: "user", content },
+                ...openaiMessages,
             ],
             stream: true,
             temperature: 0.2,
@@ -38,7 +69,6 @@ export async function POST(req: NextRequest) {
                             // https://github.com/remarkjs/react-markdown/issues/273
                             "  \n"
                         ) || "";
-                    console.log("[BE Chunk]", data);
                     if (data) {
                         controller.enqueue(`${data}\n\n`);
                     }

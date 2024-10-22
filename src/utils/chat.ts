@@ -1,17 +1,19 @@
+import { IMessage } from "./types";
+
 interface ChatProps {
-    content: string;
+    chatHistory: IMessage[];
     onReceiveChunk: (chunk: string) => void;
 }
 
 export const chat = async (props: ChatProps) => {
-    const { content, onReceiveChunk } = props;
+    const { chatHistory, onReceiveChunk } = props;
 
     const response = await fetch("/api/chat", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify({ chatHistory }),
     });
 
     if (!response.ok) {
@@ -23,6 +25,8 @@ export const chat = async (props: ChatProps) => {
     const decoder = new TextDecoder();
     let done = false;
 
+    // let botResponse = "";
+
     while (!done) {
         const { value, done: readerDone } = await reader!.read();
         done = readerDone;
@@ -30,8 +34,12 @@ export const chat = async (props: ChatProps) => {
         if (chunk) {
             const messages = chunk.split("\n\n");
             for (const message of messages) {
+                // botResponse += message;
                 onReceiveChunk(message);
             }
         }
     }
+
+    // console.log("[Bot Response]");
+    // console.log(botResponse);
 };
