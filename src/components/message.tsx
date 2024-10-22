@@ -30,7 +30,6 @@ const Message: FC<Props> = ({ message }) => {
             </div>
 
             <Markdown
-                children={message.content}
                 components={{
                     code(props) {
                         const { children, className, ...rest } = props;
@@ -38,10 +37,11 @@ const Message: FC<Props> = ({ message }) => {
                         return match ? (
                             <SyntaxHighlighter
                                 PreTag="div"
-                                children={String(children).replace(/\n$/, "")}
                                 language={match[1]}
                                 style={atomDark}
-                            />
+                            >
+                                {String(children).replace(/\n$/, "")}
+                            </SyntaxHighlighter>
                         ) : (
                             <code {...rest} className={className}>
                                 {children}
@@ -49,7 +49,9 @@ const Message: FC<Props> = ({ message }) => {
                         );
                     },
                 }}
-            />
+            >
+                {message.content}
+            </Markdown>
         </div>
     );
 };

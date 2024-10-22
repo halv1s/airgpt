@@ -1,10 +1,12 @@
-import { Textarea } from "./components/ui/textarea";
-import { Button } from "./components/ui/button";
-import Message from "./components/message";
+"use client";
+
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import Message from "@/components/message";
 import { useState } from "react";
 import { PaperPlaneIcon } from "@radix-ui/react-icons";
-import { IMessage } from "./utils/types";
-import { chat } from "./utils/openai";
+import { IMessage } from "@/utils/types";
+// import { chat } from "@/utils/openai";
 
 function App() {
     const [isSending, setIsSending] = useState(false);
@@ -13,25 +15,31 @@ function App() {
 
     const handleSendInput = async () => {
         setIsSending(true);
-        const newMessage: IMessage = {
-            id: Date.now().toString(),
+
+        const userMessage: IMessage = {
+            id: "123",
+            content: input,
+            isBot: false,
+        };
+        const botMessage: IMessage = {
+            id: "456",
             content: "",
             isBot: true,
         };
-        setHistory((prevHistory) => [...prevHistory, newMessage]);
+        setHistory((prevHistory) => [...prevHistory, userMessage, botMessage]);
 
-        await chat({
-            content: input,
-            onReceiveChunk: (chunk) => {
-                setHistory((prevHistory) => {
-                    const updatedHistory = [...prevHistory];
-                    const lastMessage =
-                        updatedHistory[updatedHistory.length - 1];
-                    lastMessage.content += chunk;
-                    return updatedHistory;
-                });
-            },
-        });
+        // await chat({
+        //     content: input,
+        //     onReceiveChunk: (chunk) => {
+        //         setHistory((prevHistory) => {
+        //             const updatedHistory = [...prevHistory];
+        //             const lastMessage =
+        //                 updatedHistory[updatedHistory.length - 1];
+        //             lastMessage.content += chunk;
+        //             return updatedHistory;
+        //         });
+        //     },
+        // });
 
         setInput("");
         setIsSending(false);
