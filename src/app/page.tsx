@@ -23,7 +23,7 @@ function App() {
                         ref={
                             index === history.length - 1 ? lastMessageRef : null
                         }
-                        key={message.id}
+                        key={index}
                     >
                         <Message message={message} />
                     </div>
