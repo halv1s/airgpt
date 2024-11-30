@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
 
 const geistSans = localFont({
     src: "./fonts/GeistVF.woff",
@@ -16,7 +14,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-    title: "Air GPT",
+    title: "AirGPT",
     description: "The most lightweight GPT client xD",
 };
 
@@ -30,16 +28,7 @@ export default function RootLayout({
             <body
                 className={`${geistSans.variable} ${geistMono.variable} antialiased`}
             >
-                <SidebarProvider>
-                    <AppSidebar />
-                    <main className="h-screen flex-grow flex flex-col">
-                        <nav className="flex items-center gap-2 p-2">
-                            <SidebarTrigger className="[&_svg]:size-6" />
-                            <h1 className="text-lg font-bold">Air GPT</h1>
-                        </nav>
-                        {children}
-                    </main>
-                </SidebarProvider>
+                {children}
             </body>
         </html>
     );
